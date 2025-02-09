@@ -1,0 +1,139 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Produtos</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <header style="display: flex; justify-content: space-between; align-items: center;">
+        <a href="/">
+            <img class="logo" src="{% static 'logo.png' %}" alt="">
+        </a>
+        <form style="color: white;">
+            <label for="pesquisa" style="height: 80px;">
+                <span>Pesquisa</span>
+            </label>
+            <input id="pesquisa" type="text" name="pesquisa" value="">
+        </form>
+    </header>
+    
+    <main>
+        <div class="sidebar">
+            <h1 class="filtroH1">Filtros</h1>
+            
+            
+            <!-- Filtros -->
+            <div class="filters">
+                <h3>Filtros</h3>
+                <form method="get">
+                    <label for="frete_gratis">Frete Grátis:</label>
+                    <input type="checkbox" name="frete_gratis" {% if request.GET.frete_gratis %}checked{% endif %}>
+                <br>
+                
+                <label for="full">Entrega Full:</label>
+                <input type="checkbox" name="full" {% if request.GET.full %}checked{% endif %}>
+                <br>
+                
+                <label for="loja_oficial">Vendedor Oficial:</label>
+                <input type="checkbox" name="loja_oficial" {% if request.GET.loja_oficial %}checked{% endif %}>
+                <br>
+                
+                <button type="submit">Filtrar</button>
+            </form>
+        </div>
+        
+        <!-- Ordenação -->
+        <div class="order">
+            <h3>Ordenar</h3>
+            <form method="get">
+                <label for="order_by">Ordenar por:</label>
+                <select name="order_by" onchange="this.form.submit()">
+                    <option value="preco_asc" {% if request.GET.order_by == "preco_asc" %}selected{% endif %}>Menor Preço</option>
+                    <option value="preco_desc" {% if request.GET.order_by == "preco_desc" %}selected{% endif %}>Maior Preço</option>
+                    <option value="pcto_asc" {% if request.GET.order_by == "pcto_asc" %}selected{% endif %}>Menor Desconto</option>
+                    <option value="pcto_desc" {% if request.GET.order_by == "pcto_desc" %}selected{% endif %}>Maior Desconto</option>
+                </select>
+            </form>
+        </div>
+        
+    </div>
+    
+    <div class="ListaProdutos">
+        <!-- Lista de Produtos -->
+        <!-- <h1 class="produtoH1">Produtos</h1> -->
+        
+            {% for produto in page_obj %}
+            <section>
+                <div class="card">
+                    <a href="{{ produto.link }}">
+                        <img class="imagemProduto" src="{{ produto.link_imagem }}" alt="{{ produto.nome }}" width="250">
+                        <p><strong>{{ produto.nome }}</strong></p>
+                        <br>
+                        {% if produto.valor !=  produto.valor_com_desc %}
+                        <p style="color: rgb(155, 42, 42);"><s>Valor original: R$ {{ produto.valor }},00</s></p>
+                        <p style="color: rgb(9, 114, 56);font-size: 25px;"> Valor c/ desc: R$ {{ produto.valor_com_desc }},00</p>
+                        <p style="color: rgb(13, 104, 96);">Desconto: {{ produto.pcto_desc }}%</p>
+                        {% else %}
+                        <p style="color: rgb(9, 114, 56);font-size: 25px;"> Valor: R$ {{ produto.valor_com_desc }},00</p>
+                        {% endif %}
+                        
+                        <br>
+                        
+                        
+                        {% if produto.frete_gratis == True%}
+                            <p style="font-size: 20px;align-items: center;">Frete grátis: <img style="height: 18px;" src="{% static 'true.png' %}" alt=""></p>
+                        {% else %}
+                            <p style="font-size: 20px;align-items: center;">Frete grátis: <img style="height: 18px;" src="{% static 'false.png' %}" alt=""></p>
+                        {% endif %}
+
+                        {% if produto.full == True%}
+                            <p style="font-size: 20px;align-items: center;">Entrega Full: <img style="height: 18px;" src="{% static 'true.png' %}" alt=""></p>
+                        {% else %}
+                            <p style="font-size: 20px;align-items: center;">Entrega Full: <img style="height: 18px;" src="{% static 'false.png' %}" alt=""></p>
+                        {% endif %}
+
+                        {% if produto.loja_oficial == True%}
+                            <p style="font-size: 20px;align-items: center;">Loja oficial: <img style="height: 18px;" src="{% static 'true.png' %}" alt=""></p>
+                        {% else %}
+                            <p style="font-size: 20px;align-items: center;">Loja oficial: <img style="height: 18px;" src="{% static 'false.png' %}" alt=""></p>
+                        {% endif %}
+                    </a>
+                </div>
+            </section>
+                {% empty %}
+                <section>Nenhum produto encontrado.</section>
+                {% endfor %}
+            
+        </div>
+        
+        
+        
+    </main>
+    <footer>
+        <!-- Navegação entre as páginas -->
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                <a href="?page=1{% if request.GET.frete_gratis %}&frete_gratis=on{% endif %}{% if request.GET.full %}&full=on{% endif %}{% if request.GET.order_by %}&order_by={{ request.GET.order_by }}{% endif %}">&laquo; Primeira</a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.frete_gratis %}&frete_gratis=on{% endif %}{% if request.GET.full %}&full=on{% endif %}{% if request.GET.order_by %}&order_by={{ request.GET.order_by }}{% endif %}">Anterior</a>
+                {% endif %}
+                
+                <span class="current">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.
+                </span>
+                
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.frete_gratis %}&frete_gratis=on{% endif %}{% if request.GET.full %}&full=on{% endif %}{% if request.GET.order_by %}&order_by={{ request.GET.order_by }}{% endif %}">Próxima</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.frete_gratis %}&frete_gratis=on{% endif %}{% if request.GET.full %}&full=on{% endif %}{% if request.GET.order_by %}&order_by={{ request.GET.order_by }}{% endif %}">Última &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+    </footer>
+</body>
+</html>
+    
